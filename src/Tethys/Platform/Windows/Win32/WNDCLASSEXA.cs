@@ -5,10 +5,10 @@ using System.Runtime.InteropServices;
 namespace Tethys.Platform.Windows.Win32
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct WNDCLASSEXA
+    internal struct WNDCLASSEXA
     {
         public uint CbSize;
-        public uint Style;
+        public WindowClassStyles Style;
         public unsafe delegate* unmanaged <HWND, WindowsMessage, nuint, nuint, nint> LpFnWndProc;
         public int CbClsExtra;
         public int CbWndExtra;

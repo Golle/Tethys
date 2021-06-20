@@ -2,36 +2,27 @@ using System;
 using System.Runtime.InteropServices;
 using Tethys.Logging;
 using Tethys.Platform.Windows.Win32;
-using static Tethys.Platform.Windows.User32;
+using static Tethys.Platform.Windows.Win32.User32;
+using static Tethys.Platform.Windows.Win32.WindowClassStyles;
 using static Tethys.Platform.Windows.Win32.WindowsMessage;
 
 namespace Tethys.Platform.Windows
 {
-
-    internal class DeviceContext
-    {
-        private readonly HDC _context;
-        public DeviceContext(in HDC context)
-        {
-            _context = context;
-        }
-    }
-
-
     internal class Window : IDisposable
     {
         private static Window _activeWindow;
-
-
-        private readonly HWND _handle;
-
-        private readonly DeviceContext _context;
-        public Window(in HWND handle, in HDC deviceContext)
+        public int Width { get; }
+        public int Height { get; }
+        
+        public Window(in HWND handle, int width, int height)
         {
-            _handle = handle;
-            _context = new DeviceContext(deviceContext);
+            Handle = handle;
+            Width = width;
+            Height = height;
             _activeWindow = this;
         }
+
+        public HWND Handle { get; }
 
         public static unsafe Window Create(int width,  int height, string title)
         {
@@ -54,7 +45,7 @@ namespace Tethys.Platform.Windows
                 HInstance = Marshal.GetHINSTANCE(typeof(Window).Module),
                 HbrBackground = 0,
                 LpszClassName = className,
-                Style = 0
+                Style = CS_HREDRAW | CS_OWNDC | CS_VREDRAW
             };
             Logger.Trace($"RegisterClass {className}");
             if (RegisterClassExA(wndClassExA) == 0)
@@ -98,14 +89,7 @@ namespace Tethys.Platform.Windows
                 return null;
             }
 
-            var context = GDI.GetDC(handle);
-            if (!context.IsValid())
-            {
-                Logger.Error($"GetDC failed with Win32Error {Marshal.GetLastWin32Error()}");
-                return null;
-            }
-
-            return new Window(handle, context);
+            return new Window(handle, width, height);
         }
 
         public bool Update()
@@ -184,8 +168,9 @@ namespace Tethys.Platform.Windows
 
         public void Dispose()
         {
+            Logger.Trace($"Disposing {nameof(Window)}");
             UnregisterClassA(typeof(Window).FullName, Marshal.GetHINSTANCE(typeof(Window).Module));
-            DestroyWindow(_handle);
+            DestroyWindow(Handle);
             _activeWindow = null;
         }
     }

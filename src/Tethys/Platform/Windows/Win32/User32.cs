@@ -1,9 +1,8 @@
-﻿using System.Runtime.InteropServices;
-using Tethys.Platform.Windows.Win32;
+using System.Runtime.InteropServices;
 
-namespace Tethys.Platform.Windows
+namespace Tethys.Platform.Windows.Win32
 {
-    public unsafe class User32
+    internal unsafe class User32
     {
         public const int GWLP_USERDATA = -21;
 
@@ -131,6 +130,18 @@ namespace Tethys.Platform.Windows
         public static extern nint GetWindowLongPtrA(
             [In] HWND hwnd,
             [In] int nIndex
+        );
+
+
+        [DllImport(User32Dll, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        public static extern HDC GetDC(
+            [In] HWND hwnd
+        );
+
+        [DllImport(User32Dll, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        public static extern int ReleaseDC(
+            [In] HWND hwnd,
+            [In] HDC hdc
         );
     }
 }
