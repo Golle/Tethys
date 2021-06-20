@@ -1,4 +1,4 @@
-﻿using Tethys.Logging;
+using Tethys.Logging;
 using Tethys.Platform.Windows;
 
 Logger.Start();

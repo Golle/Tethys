@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using Tethys.Logging;
 using Tethys.Platform.Windows.Win32;
@@ -7,14 +7,29 @@ using static Tethys.Platform.Windows.Win32.WindowsMessage;
 
 namespace Tethys.Platform.Windows
 {
+
+    internal class DeviceContext
+    {
+        private readonly HDC _context;
+        public DeviceContext(in HDC context)
+        {
+            _context = context;
+        }
+    }
+
+
     internal class Window : IDisposable
     {
-        private readonly HWND _handle;
         private static Window _activeWindow;
 
-        public Window(in HWND handle)
+
+        private readonly HWND _handle;
+
+        private readonly DeviceContext _context;
+        public Window(in HWND handle, in HDC deviceContext)
         {
             _handle = handle;
+            _context = new DeviceContext(deviceContext);
             _activeWindow = this;
         }
 
@@ -83,7 +98,14 @@ namespace Tethys.Platform.Windows
                 return null;
             }
 
-            return new Window(handle);
+            var context = GDI.GetDC(handle);
+            if (!context.IsValid())
+            {
+                Logger.Error($"GetDC failed with Win32Error {Marshal.GetLastWin32Error()}");
+                return null;
+            }
+
+            return new Window(handle, context);
         }
 
         public bool Update()
